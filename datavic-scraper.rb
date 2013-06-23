@@ -5,7 +5,7 @@
 # Last update: 23 June 2013
 
 # Usage: datavic-scraper.rb query
-# Returns: Output into a file entitled scrape-`query`, one JSON element per line
+# Output: JSON to STDOUT (pipe it into a file yourself)
 
 require 'open-uri'
 require 'uri'
@@ -25,30 +25,30 @@ class GovData < Struct.new(:name, :agency, :agency_url, :url_page, :url_file, :f
   end
 end
 
-def fetch(query)
+def fetch(query, output)
   doc = Nokogiri::HTML(open(BASE_URI+"/search?q=#{URI.encode(query)}"))
   pages = []
   doc.css("div.tags ul a").each do |p|
     pages << p["href"]
   end
   pages.each do |p|
-    get_page(p)
+    get_page(p,output)
 #    sleep(3)
   end
 end
 
-def get_page(url)
+def get_page(url,output)
   search_page = Nokogiri::HTML(open(BASE_URI+url))
   records = []
   search_page.css("a.more").each do |a|
     records << a["href"]
   end
   records.each do |r|
-    get_record(r)
+    get_record(r,output)
   end
 end
 
-def get_record(url)
+def get_record(url,output)
   begin
     record_page = Nokogiri::HTML(open(url))
     name = record_page.css("h1.rawdatah1").first.content
@@ -64,18 +64,12 @@ def get_record(url)
       tags << t.content
     end
     description = record_page.xpath("//dd[@property='dc:description']").first.content.strip
-    OUTPUT_FILE.puts(GovData.new(name,agency,agency_url,url,url_file,format,license,keywords,tags,description).json)
+    output << GovData.new(name,agency,agency_url,url,url_file,format,license,keywords,tags,description).json
   rescue OpenURI::HTTPError
     ERRORS << url
   end
 end
 
-puts "Fetching results for query: #{ARGV[0]}\r\n"
-
-query = ARGV[0]
-OUTPUT_FILE = File.open("scrape-#{Shellwords.escape(query)}",'w+')
-fetch(query)
-OUTPUT_FILE.close
-
-puts "\n\rDuring the running of this program we encountered errors reaching the following:"
-puts ERRORS
+output = []
+fetch(query,output)
+puts '{"results":['+output.join(",")+']}'
