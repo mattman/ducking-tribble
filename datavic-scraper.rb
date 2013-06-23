@@ -10,6 +10,7 @@
 require 'open-uri'
 require 'nokogiri'
 require 'json'
+require 'shellwords'
 
 # setup some base variables that I might reuse throughout
 # (or at least I'll have them handy if they change them)
@@ -62,14 +63,18 @@ def get_record(url)
       tags << t.content
     end
     description = record_page.xpath("//dd[@property='dc:description']").first.content.strip
-    puts GovData.new(name,agency,agency_url,url,url_file,format,license,keywords,tags,description).json
+    OUTPUT_FILE.puts(GovData.new(name,agency,agency_url,url,url_file,format,license,keywords,tags,description).json)
   rescue OpenURI::HTTPError
     ERRORS << url
   end
 end
 
 puts "Fetching results for query: #{ARGV[0]}\r\n"
-fetch(ARGV[0])
+
+query = ARGV[0]
+OUTPUT_FILE = File.open("scrape-#{Shellwords.escape(query)}",'w+')
+fetch(query)
+OUTPUT_FILE.close
 
 puts "\n\rDuring the running of this program we encountered errors reaching the following:"
 puts ERRORS
