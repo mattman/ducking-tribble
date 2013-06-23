@@ -41,17 +41,20 @@ def get_page(url)
 end
 
 def get_record(url)
-  record_page = Nokogiri::HTML(open(url))
-  name = record_page.css("h1.rawdatah1").first.content
-  agency = (record_page.css(".post")/:p/:a).first.content
-  url_file = record_page.xpath("//meta[@name='DCTERMS.Source']").first["content"]
-  format = record_page.xpath("//meta[@name='DCTERMS.Format']").first["content"]
-  license = record_page.xpath("//meta[@name='DCTERMS.License']").first["content"]
-  keywords = record_page.xpath("//meta[@name='DCTERMS.keywords']").first["content"]
-  description = record_page.xpath("//dd[@property='dc:description']").first.content.strip
-  rec = GovData.new(name,agency,url,url_file,format,license,keywords,description)
-  # TODO : Send the struct somewhere useful
-  puts rec
+  begin
+    record_page = Nokogiri::HTML(open(url))
+    name = record_page.css("h1.rawdatah1").first.content
+    agency = (record_page.css(".post")/:p/:a).first.content
+    url_file = record_page.xpath("//meta[@name='DCTERMS.Source']").first["content"]
+    format = record_page.xpath("//meta[@name='DCTERMS.Format']").first["content"]
+    license = record_page.xpath("//meta[@name='DCTERMS.License']").first["content"]
+    keywords = record_page.xpath("//meta[@name='DCTERMS.keywords']").first["content"]
+    description = record_page.xpath("//dd[@property='dc:description']").first.content.strip
+    rec = GovData.new(name,agency,url,url_file,format,license,keywords,description)
+    # TODO : Send the struct somewhere useful
+    puts rec
+  rescue OpenURI::HTTPError
+    puts "Could not open #{url}, returned an HTTP error (likely a 404 given data.vic.gov.au)"
 end
 
 puts "Fetching results for: #{ARGV[0]}"
@@ -59,5 +62,6 @@ fetch(ARGV[0])
 
 # TODO:
 # => Error Handling (404 etc)
+#   => Partially done :)
 # => Throttling connections to the server
 # => Outputting the data in a useful format for Keith
