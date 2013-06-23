@@ -33,7 +33,7 @@ def fetch(query)
   end
   pages.each do |p|
     get_page(p)
-    sleep(3)
+#    sleep(3)
   end
 end
 
