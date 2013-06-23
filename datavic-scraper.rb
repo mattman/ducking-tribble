@@ -14,6 +14,7 @@ require 'json'
 # setup some base variables that I might reuse throughout
 # (or at least I'll have them handy if they change them)
 BASE_URI = "http://www.data.vic.gov.au"
+ERRORS = []
 
 # Define a 'data' (record) class
 class GovData < Struct.new(:name, :agency, :agency_url, :url_page, :url_file, :format, :license, :keywords, :tags, :description)
@@ -63,9 +64,12 @@ def get_record(url)
     description = record_page.xpath("//dd[@property='dc:description']").first.content.strip
     puts GovData.new(name,agency,agency_url,url,url_file,format,license,keywords,tags,description).json
   rescue OpenURI::HTTPError
-    puts "Could not open #{url}, returned an HTTP error (likely a 404 given data.vic.gov.au)"
+    ERRORS << url
   end
 end
 
-puts "Fetching results for query: #{ARGV[0]}"
+puts "Fetching results for query: #{ARGV[0]}\r\n"
 fetch(ARGV[0])
+
+puts "\n\rDuring the running of this program we encountered errors reaching the following:"
+puts ERRORS
