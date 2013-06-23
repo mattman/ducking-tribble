@@ -55,6 +55,7 @@ def get_record(url)
     puts rec
   rescue OpenURI::HTTPError
     puts "Could not open #{url}, returned an HTTP error (likely a 404 given data.vic.gov.au)"
+  end
 end
 
 puts "Fetching results for: #{ARGV[0]}"
