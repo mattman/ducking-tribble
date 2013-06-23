@@ -13,21 +13,31 @@ require 'nokogiri'
 # setup some base variables that I might reuse throughout
 # (or at least I'll have them handy if they change them)
 BASE_URI = "http://www.data.vic.gov.au"
-PAGINATE_CLASS = "div.tags ul a" # The links inside the .tags ul element
 
 # Define a 'data' (record) class
 Data = Struct.new(:name, :agency, :url_page, :url_file, :format, :license, :keywords, :description)
 
 def fetch(query)
-  pages = []
   doc = Nokogiri::HTML(open(BASE_URI+"/search?q=#{query}"))
-  doc.css(PAGINATE_CLASS).each do |p|
+  pages = []
+  doc.css("div.tags ul a").each do |p|
     pages << p["href"]
+  end
+  pages.each do |p|
+    get_page(p)
   end
 end
 
-def page(url)
-  
+def get_page(url)
+  search_page = Nokogiri::HTML(open(BASE_URI+url))
+  records = []
+  search_page.css("a.more") do |a|
+    records << a["href"]
+  end
+  records.each do |r|
+    # TODO: Throttle this so we don't slam the data.vic.gov.au server :/
+    get_record(r)
+  end
 end
 
 def get_record(url)
