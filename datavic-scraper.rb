@@ -28,13 +28,19 @@ end
 def fetch(query, output)
   doc = Nokogiri::HTML(open(BASE_URI+"/search?q=#{URI.encode(query)}"))
   pages = []
-  doc.css("div.tags ul a").each do |p|
-    pages << p["href"]
+  a = doc.css("div.tags ul a")
+  if !a.empty?
+    a.each do |p|
+      pages << p["href"]
+    end
+  else
+    pages << "/search?q=#{URI.encode(query)}"
   end
   pages.each do |p|
     get_page(p,output)
 #    sleep(3)
   end
+  output
 end
 
 def get_page(url,output)
@@ -71,5 +77,5 @@ def get_record(url,output)
 end
 
 output = []
-fetch(query,output)
+fetch(ARGV[0],output)
 puts '{"results":['+output.join(",")+']}'
