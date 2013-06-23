@@ -15,7 +15,7 @@ require 'nokogiri'
 BASE_URI = "http://www.data.vic.gov.au"
 
 # Define a 'data' (record) class
-Data = Struct.new(:name, :agency, :url_page, :url_file, :format, :license, :keywords, :description)
+GovData = Struct.new(:name, :agency, :url_page, :url_file, :format, :license, :keywords, :description)
 
 def fetch(query)
   doc = Nokogiri::HTML(open(BASE_URI+"/search?q=#{query}"))
@@ -31,11 +31,11 @@ end
 def get_page(url)
   search_page = Nokogiri::HTML(open(BASE_URI+url))
   records = []
-  search_page.css("a.more") do |a|
+  search_page.css("a.more").each do |a|
     records << a["href"]
   end
+  puts records
   records.each do |r|
-    # TODO: Throttle this so we don't slam the data.vic.gov.au server :/
     get_record(r)
   end
 end
@@ -47,12 +47,17 @@ def get_record(url)
   url_file = record_page.xpath("//meta[@name='DCTERMS.Source']").first["content"]
   format = record_page.xpath("//meta[@name='DCTERMS.Format']").first["content"]
   license = record_page.xpath("//meta[@name='DCTERMS.License']").first["content"]
-  keywords = record_page.xpath("//meta[@name='DCTERMS.ketwords']").first["content"]
+  keywords = record_page.xpath("//meta[@name='DCTERMS.keywords']").first["content"]
   description = record_page.xpath("//dd[@property='dc:description']").first.content.strip
-  rec = Data.new(name,agency,url,url_file,format,license,keywords,description)
+  rec = GovData.new(name,agency,url,url_file,format,license,keywords,description)
   # TODO : Send the struct somewhere useful
   puts rec
 end
 
 puts "Fetching results for: #{ARGV[0]}"
 fetch(ARGV[0])
+
+# TODO:
+# => Error Handling (404 etc)
+# => Throttling connections to the server
+# => Outputting the data in a useful format for Keith
