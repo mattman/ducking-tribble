@@ -22,7 +22,7 @@ def fetch(query)
   pages = []
   doc = Nokogiri::HTML(open(BASE_URI+"/search?q=#{query}"))
   doc.css(PAGINATE_CLASS).each do |p|
-    pages << p.attributes["href"].value
+    pages << p["href"]
   end
 end
 
@@ -33,12 +33,12 @@ end
 def get_record(url)
   record_page = Nokogiri::HTML(open(url))
   name = record_page.css("h1.rawdatah1").first.content
-  agency =
-  url_file = doc.xpath("//meta[@name='DCTERMS.Source']").first.attributes["content"].value
-  format = doc.xpath("//meta[@name='DCTERMS.Format']").first.attributes["content"].value
-  license = doc.xpath("//meta[@name='DCTERMS.License']").first.attributes["content"].value
-  keywords = doc.xpath("//meta[@name='DCTERMS.ketwords']").first.attributes["content"].value
-  description
+  agency = (record_page.css(".post")/:p/:a).first.content
+  url_file = record_page.xpath("//meta[@name='DCTERMS.Source']").first["content"]
+  format = record_page.xpath("//meta[@name='DCTERMS.Format']").first["content"]
+  license = record_page.xpath("//meta[@name='DCTERMS.License']").first["content"]
+  keywords = record_page.xpath("//meta[@name='DCTERMS.ketwords']").first["content"]
+  description = record_page.xpath("//dd[@property='dc:description']").first.content.strip
   rec = Data.new(name,agency,url,url_file,format,license,keywords,description)
   # TODO : Send the struct somewhere useful
   puts rec
