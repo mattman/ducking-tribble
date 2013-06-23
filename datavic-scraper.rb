@@ -5,7 +5,7 @@
 # Last update: 23 June 2013
 
 # Usage: datavic-scraper.rb query
-# Returns: [TODO] SOMETHING USEFUL
+# Returns: Output into a file entitled scrape-`query`, one JSON element per line
 
 require 'open-uri'
 require 'nokogiri'
