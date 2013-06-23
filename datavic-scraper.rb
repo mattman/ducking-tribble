@@ -8,6 +8,7 @@
 # Returns: Output into a file entitled scrape-`query`, one JSON element per line
 
 require 'open-uri'
+require 'uri'
 require 'nokogiri'
 require 'json'
 require 'shellwords'
@@ -25,7 +26,7 @@ class GovData < Struct.new(:name, :agency, :agency_url, :url_page, :url_file, :f
 end
 
 def fetch(query)
-  doc = Nokogiri::HTML(open(BASE_URI+"/search?q=#{query}"))
+  doc = Nokogiri::HTML(open(BASE_URI+"/search?q=#{URI.encode(query)}"))
   pages = []
   doc.css("div.tags ul a").each do |p|
     pages << p["href"]
